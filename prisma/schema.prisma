@@ -1,0 +1,64 @@
+// Prisma schema for AI Attendance & Timesheet Analyzer
+// Database: SQLite (simple, zero-config for an assignment)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// App login accounts. Role is either "ADMIN" or "EMPLOYEE".
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String // plain text — fine for a demo/assignment only
+  role      String   @default("EMPLOYEE")
+  createdAt DateTime @default(now())
+}
+
+// A company department e.g. Engineering, Sales.
+model Department {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  employees Employee[]
+}
+
+// An employee being tracked.
+model Employee {
+  id           String       @id @default(cuid())
+  name         String
+  email        String       @unique
+  position     String
+  joinedAt     DateTime     @default(now())
+  departmentId String
+  department   Department   @relation(fields: [departmentId], references: [id])
+  attendance   Attendance[]
+  timesheets   Timesheet[]
+}
+
+// One attendance record = one working day for one employee.
+model Attendance {
+  id         String   @id @default(cuid())
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  date       DateTime
+  checkIn    String // "HH:MM" 24h
+  checkOut   String // "HH:MM" 24h
+  totalHours Float
+  status     String // PRESENT | LATE | ABSENT | HALF_DAY
+}
+
+// A daily work log entry against a project.
+model Timesheet {
+  id          String   @id @default(cuid())
+  employeeId  String
+  employee    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  date        DateTime
+  project     String
+  task        String
+  hours       Float
+}
