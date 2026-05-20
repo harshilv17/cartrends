@@ -28,7 +28,7 @@ models, just plain statistics and easy-to-read logic.
 | Backend  | Next.js API routes                  |
 | Database | PostgreSQL (Neon) + Prisma ORM      |
 | Charts   | Recharts                            |
-| AI logic | Rule-based statistics (no ML)       |
+| AI logic | Groq LLM (Llama 3.3) + rule-based fallback |
 
 ---
 
@@ -117,19 +117,25 @@ Open <http://localhost:3000> and log in.
 
 ## How the AI Insights Work
 
-The "AI" is a set of plain rules in `src/lib/analytics.ts`. From raw
-attendance records it computes per-employee statistics (average hours,
-late days, overtime days, attendance %), aggregates them by department,
-then applies simple rules such as:
+Insights run through a **two-stage pipeline**:
 
-- Highest punctuality % → **Most Punctual Employee**
-- 3+ late arrivals → **Frequent Late Arrivals** warning
-- Average hours above the burnout threshold → **Burnout Risk**
-- Highest department average → **Most Productive Department**
+1. **Statistical layer** (`src/lib/analytics.ts`) — pure functions compute
+   per-employee stats from raw attendance records: average hours, late
+   days, overtime days, attendance %, punctuality %. These are also
+   aggregated to the department level.
 
-Example output:
+2. **LLM layer** (`src/lib/groq.ts`) — the computed stats are sent to a
+   Groq-hosted Llama 3.3 model with a structured JSON prompt. The model
+   writes 4–6 short, manager-friendly insights referencing real names
+   and numbers from the data (no hallucinated values).
 
-> *"Rahul Sharma worked 18% more hours than average and may be at burnout risk."*
+If `GROQ_API_KEY` is missing or the API call fails, the app automatically
+falls back to the deterministic rule-based engine — so the dashboard
+never breaks.
+
+Example LLM output:
+
+> *"Rahul Sharma worked 18% more hours than the team average and may be at burnout risk."*
 
 ---
 

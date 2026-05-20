@@ -8,7 +8,11 @@ import {
   round,
   type AttendanceRecord,
   type EmployeeRef,
+  type Insight,
 } from "@/lib/analytics";
+import { generateAIInsights } from "@/lib/groq";
+
+export const dynamic = "force-dynamic";
 
 // GET /api/dashboard — everything the dashboard page needs in one call.
 export async function GET() {
@@ -27,7 +31,16 @@ export async function GET() {
   const stats = computeEmployeeStats(refs, attendance as AttendanceRecord[]);
   const departmentStats = computeDepartmentStats(stats);
   const weekly = computeWeeklySummary(attendance as AttendanceRecord[]);
-  const insights = generateInsights(stats, departmentStats);
+
+  // Use Groq for insights; fall back to the rule-based engine on failure.
+  let insights: Insight[];
+  try {
+    insights = await generateAIInsights(stats, departmentStats);
+    if (insights.length === 0) throw new Error("LLM returned no insights");
+  } catch (err) {
+    console.warn("Groq insights failed, using rule-based fallback:", err);
+    insights = generateInsights(stats, departmentStats);
+  }
 
   // ---- KPI cards ------------------------------------------------------------
   const totalEmployees = employees.length;
