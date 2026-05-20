@@ -26,7 +26,7 @@ models, just plain statistics and easy-to-read logic.
 | Frontend | Next.js (App Router), TypeScript    |
 | Styling  | TailwindCSS + shadcn/ui components  |
 | Backend  | Next.js API routes                  |
-| Database | SQLite + Prisma ORM                 |
+| Database | PostgreSQL (Neon) + Prisma ORM      |
 | Charts   | Recharts                            |
 | AI logic | Rule-based statistics (no ML)       |
 
@@ -63,23 +63,36 @@ models, just plain statistics and easy-to-read logic.
 
 ## Setup
 
-> Requires Node.js 18+.
+> Requires Node.js 18+ and a free [Neon](https://neon.tech) Postgres project.
 
 ```bash
 # 1. Install dependencies
 npm install
 
-# 2. Create the SQLite database from the schema
+# 2. Configure database connection
+cp .env.example .env
+# Then paste your Neon "Pooled" and "Direct" connection strings into .env
+# (DATABASE_URL and DIRECT_URL respectively).
+
+# 3. Push the schema to your Neon database
 npm run db:push
 
-# 3. Seed realistic dummy data
+# 4. Seed realistic dummy data
 npm run db:seed
 
-# 4. Start the dev server
+# 5. Start the dev server
 npm run dev
 ```
 
 Open <http://localhost:3000> and log in.
+
+### Deploying
+
+1. Push the repo to GitHub.
+2. Import the project on Vercel (or any Node host).
+3. Add `DATABASE_URL` and `DIRECT_URL` from Neon as environment variables.
+4. Run `npm run db:push && npm run db:seed` once against the Neon database
+   (locally or via a one-off Vercel build step) to set up tables and data.
 
 ### Demo Accounts
 
