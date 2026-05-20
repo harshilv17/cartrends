@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@/generated/prisma";
 
 // Reuse a single PrismaClient instance across hot reloads in development.
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };

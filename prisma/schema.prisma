@@ -3,6 +3,9 @@
 
 generator client {
   provider = "prisma-client-js"
+  // Generate the client into the source tree so it survives Vercel's
+  // node_modules cache (otherwise builds fail with a stale client error).
+  output   = "../src/generated/prisma"
 }
 
 datasource db {

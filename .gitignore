@@ -32,5 +32,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# prisma generated client (built on each install / build)
+/src/generated
+
 # claude
 .claude
